@@ -102,4 +102,4 @@ Data : 	CSV datasets (symptoms, medications, workouts)
 
 ML Model	 : SVM (svc.pkl) trained on symptom-disease mappings
 
-Version Control : 	GitHub
+
