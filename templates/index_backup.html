@@ -40,7 +40,7 @@
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             color: var(--dark-color);
-            padding-top: 80px;
+            padding-top: 80px; /* Account for fixed navbar */
         }
 
         /* Navbar Styling */
@@ -411,11 +411,6 @@
             animation: fadeInUp 0.6s ease-out;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
         /* Responsive Design */
         @media (max-width: 768px) {
             .hero-title {
@@ -602,6 +597,13 @@
         </div>
     </div>
 
+
+
+
+
+
+
+
     {% if predicted_disease %}
     <!-- Results Section -->
     <div class="container results-section">
@@ -670,6 +672,7 @@
         </div>
     </div>
 
+
     <!-- Description Modal -->
     <div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptionModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -711,6 +714,9 @@
             </div>
         </div>
     </div>
+
+
+
 
     <!-- Medications Modal -->
     <div class="modal fade" id="medicationsModal" tabindex="-1" aria-labelledby="medicationsModalLabel" aria-hidden="true">
@@ -782,300 +788,90 @@
         </div>
     </div>
 
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
     
     <script>
-// ENHANCED VOICE RECOGNITION WITH BRAVE BROWSER SUPPORT
-console.log('🎤 Voice System Loading...');
+// SIMPLE WORKING VOICE RECOGNITION
+console.log('🎤 Voice Loading...');
 
 document.addEventListener('DOMContentLoaded', function() {
     const voiceBtn = document.getElementById('startSpeechRecognition');
     const transcriptionDiv = document.getElementById('transcription');
     
     if (!voiceBtn || !transcriptionDiv) {
-        console.error('❌ Voice elements not found');
+        console.error('Voice elements not found');
         return;
     }
     
     console.log('✅ Voice elements found');
     
-    // Detect browser
-    function detectBrowser() {
-        const userAgent = navigator.userAgent.toLowerCase();
-        if (userAgent.includes('brave') || (navigator.brave && navigator.brave.isBrave)) return 'brave';
-        if (userAgent.includes('chrome')) return 'chrome';
-        if (userAgent.includes('firefox')) return 'firefox';
-        if (userAgent.includes('safari')) return 'safari';
-        if (userAgent.includes('edge')) return 'edge';
-        return 'unknown';
-    }
-    
-    const browser = detectBrowser();
-    console.log('🌐 Detected browser:', browser);
-    
     voiceBtn.addEventListener('click', function() {
         console.log('🎤 VOICE BUTTON CLICKED!');
         
-        // Check for speech recognition support
         if (!window.webkitSpeechRecognition && !window.SpeechRecognition) {
-            transcriptionDiv.innerHTML = `
-                <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px;">
-                    <strong>❌ VOICE NOT SUPPORTED</strong><br>
-                    Your browser doesn't support voice recognition.<br>
-                    <strong>Solutions:</strong><br>
-                    • Use Chrome, Edge, or Safari<br>
-                    • Use the Quick Symptoms button instead!
-                </div>
-            `;
+            alert('Voice not supported. Use Chrome/Edge browser.');
             return;
         }
         
-        // Special handling for Brave browser
-        if (browser === 'brave') {
-            transcriptionDiv.innerHTML = `
-                <div style="background: #fff3cd; color: #856404; padding: 1rem; border-radius: 8px;">
-                    <h6><i class="fas fa-shield-alt"></i> <strong>BRAVE BROWSER DETECTED</strong></h6>
-                    <p style="margin: 0.5rem 0;">Brave blocks voice recognition by default. To enable:</p>
-                    <ol style="margin-left: 1rem;">
-                        <li>Click the 🛡️ <strong>Brave Shield</strong> icon in the address bar</li>
-                        <li>Turn OFF <strong>"Block fingerprinting"</strong></li>
-                        <li>Refresh this page and try voice again</li>
-                    </ol>
-                    <p style="margin: 0.5rem 0;"><strong>Quick Alternative:</strong> Use the Quick Symptoms button below - it works perfectly!</p>
-                </div>
-            `;
-            return;
-        }
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
         
-        try {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = 'en-US';
-            
-            voiceBtn.innerHTML = '🛑 STOP';
-            voiceBtn.disabled = false;
-            transcriptionDiv.innerHTML = `
-                <div style="background: #d4edda; color: #155724; padding: 1rem; border-radius: 8px; text-align: center;">
-                    <strong>🎤 LISTENING ACTIVE!</strong><br>
-                    <span style="font-size: 1.2em; animation: pulse 1s infinite;">Speak your symptoms clearly now...</span><br>
-                    <small>Try: "headache and fever" or "stomach pain and nausea"</small>
-                </div>
-            `;
-            
-            let finalText = '';
-            let isRecording = true;
-            
-            // Stop button functionality
-            voiceBtn.onclick = function() {
-                if (isRecording) {
-                    recognition.stop();
-                    isRecording = false;
-                    voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Voice Input';
-                    voiceBtn.onclick = null;
-                    window.location.reload();
-                }
-            };
-            
-            recognition.start();
-            
-            // Auto-timeout after 20 seconds
-            const timeout = setTimeout(() => {
-                if (isRecording) {
-                    recognition.stop();
-                    isRecording = false;
-                    if (!finalText.trim()) {
-                        transcriptionDiv.innerHTML = `
-                            <div style="background: #fff3cd; color: #856404; padding: 1rem; border-radius: 8px;">
-                                <strong>⏱️ TIMEOUT</strong><br>
-                                No clear speech detected in 20 seconds.<br>
-                                <strong>Tips:</strong> Speak louder, get closer to microphone, or use Quick Symptoms!
-                            </div>
-                        `;
-                    }
-                    voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Voice Input';
-                    voiceBtn.onclick = null;
-                }
-            }, 20000);
-            
-            recognition.onstart = function() {
-                console.log('🎤 Recognition started successfully');
-            };
-            
-            recognition.onspeechstart = function() {
-                console.log('🗣️ Speech detected!');
-                transcriptionDiv.innerHTML = `
-                    <div style="background: #cce5ff; color: #004085; padding: 1rem; border-radius: 8px; text-align: center;">
-                        <strong>🗣️ SPEECH DETECTED!</strong><br>
-                        <span style="font-size: 1.2em;">Keep talking... I'm listening!</span>
-                    </div>
-                `;
-            };
-            
-            recognition.onresult = function(event) {
-                let interim = '';
-                
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript;
-                    
-                    if (event.results[i].isFinal) {
-                        finalText += transcript + ' ';
-                        console.log('✅ Final result:', transcript);
-                    } else {
-                        interim += transcript;
-                        console.log('🔄 Interim result:', transcript);
-                    }
-                }
-                
-                // Show live transcription
-                const displayText = finalText + (interim ? `<span style="color: #6c757d; font-style: italic;">${interim}</span>` : '');
-                transcriptionDiv.innerHTML = `
-                    <div style="background: #e7f3ff; color: #004085; padding: 1rem; border-radius: 8px;">
-                        <strong>🎤 HEARING:</strong><br>
-                        <span style="font-size: 1.1em;">${displayText || 'Keep speaking...'}</span>
-                    </div>
-                `;
-                
-                // Update input field in real-time
-                if (finalText.trim()) {
-                    const input = document.querySelector('input[name="symptoms"]');
-                    if (input) {
-                        input.value = finalText.trim().replace(/\band\b/g, ',').replace(/,+/g, ',').trim();
-                    }
-                }
-            };
-            
-            recognition.onspeechend = function() {
-                console.log('🔇 Speech ended');
-                clearTimeout(timeout);
-                
-                setTimeout(() => {
-                    if (isRecording) {
-                        recognition.stop();
-                    }
-                }, 2000);
-            };
-            
-            recognition.onerror = function(event) {
-                clearTimeout(timeout);
-                isRecording = false;
-                console.error('❌ Speech recognition error:', event.error);
-                
-                let errorMessage = '';
-                
-                switch(event.error) {
-                    case 'not-allowed':
-                        errorMessage = `
-                            <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px;">
-                                <strong>🚫 MICROPHONE BLOCKED</strong><br>
-                                Click the 🎤 icon in your browser's address bar and allow microphone access.<br>
-                                Then refresh the page and try again.
-                            </div>
-                        `;
-                        break;
-                    case 'no-speech':
-                        errorMessage = `
-                            <div style="background: #fff3cd; color: #856404; padding: 1rem; border-radius: 8px;">
-                                <strong>🔇 NO SPEECH DETECTED</strong><br>
-                                Your microphone is working but couldn't hear you clearly.<br>
-                                <strong>Solutions:</strong> Speak much louder, get closer to microphone, or use Quick Symptoms!
-                            </div>
-                        `;
-                        break;
-                    case 'audio-capture':
-                        errorMessage = `
-                            <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px;">
-                                <strong>🎤 MICROPHONE ERROR</strong><br>
-                                Cannot access your microphone.<br>
-                                <strong>Solutions:</strong> Check microphone, close other apps, or use Quick Symptoms!
-                            </div>
-                        `;
-                        break;
-                    case 'network':
-                        errorMessage = `
-                            <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px;">
-                                <strong>🌐 NETWORK ERROR</strong><br>
-                                Voice recognition needs internet connection. Check your internet and try again.
-                            </div>
-                        `;
-                        break;
-                    case 'service-not-allowed':
-                        errorMessage = `
-                            <div style="background: #fff3cd; color: #856404; padding: 1rem; border-radius: 8px;">
-                                <strong>🛡️ BROWSER BLOCKING VOICE</strong><br>
-                                Your browser's security settings are blocking voice recognition.<br>
-                                <strong>Solutions:</strong><br>
-                                • If using Brave: Click 🛡️ shield → Turn OFF "Block fingerprinting"<br>
-                                • Or use Chrome/Edge browser<br>
-                                • Or use Quick Symptoms button!
-                            </div>
-                        `;
-                        break;
-                    default:
-                        errorMessage = `
-                            <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px;">
-                                <strong>❌ VOICE ERROR</strong><br>
-                                Voice recognition failed (${event.error}).<br>
-                                <strong>Quick Solution:</strong> Use the Quick Symptoms button - it works perfectly!
-                            </div>
-                        `;
-                }
-                
-                transcriptionDiv.innerHTML = errorMessage;
-                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Voice Input';
-                voiceBtn.onclick = null;
-            };
-            
-            recognition.onend = function() {
-                clearTimeout(timeout);
-                isRecording = false;
-                console.log('🔚 Speech recognition ended');
-                
-                if (finalText.trim()) {
-                    const input = document.querySelector('input[name="symptoms"]');
-                    if (input) {
-                        const cleanText = finalText.trim()
-                            .replace(/\band\b/g, ',')
-                            .replace(/,+/g, ',')
-                            .replace(/^,|,$/g, '')
-                            .trim();
-                        input.value = cleanText;
-                    }
-                    
-                    transcriptionDiv.innerHTML = `
-                        <div style="background: #d4edda; color: #155724; padding: 1rem; border-radius: 8px; text-align: center;">
-                            <strong>✅ SUCCESS!</strong><br>
-                            <span style="font-size: 1.1em;">Added: "${finalText.trim()}"</span><br>
-                            <small>Ready to analyze your symptoms!</small>
-                        </div>
-                    `;
-                } else if (transcriptionDiv.innerHTML.includes('LISTENING') || transcriptionDiv.innerHTML.includes('READY')) {
-                    transcriptionDiv.innerHTML = `
-                        <div style="background: #fff3cd; color: #856404; padding: 1rem; border-radius: 8px;">
-                            <strong>🔇 NO CLEAR SPEECH</strong><br>
-                            Couldn't understand what you said. Try speaking louder or use Quick Symptoms!
-                        </div>
-                    `;
-                }
-                
-                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Voice Input';
-                voiceBtn.onclick = null;
-            };
-            
-        } catch (error) {
-            console.error('❌ Recognition creation failed:', error);
-            transcriptionDiv.innerHTML = `
-                <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px;">
-                    <strong>❌ FAILED TO START</strong><br>
-                    ${error.message}<br>
-                    Use the Quick Symptoms button instead!
-                </div>
-            `;
+        voiceBtn.innerHTML = '🎤 LISTENING!';
+        voiceBtn.disabled = true;
+        transcriptionDiv.innerHTML = '🎤 <strong>LISTENING... SPEAK NOW!</strong>';
+        transcriptionDiv.style.color = '#28a745';
+        
+        let finalText = '';
+        recognition.start();
+        
+        setTimeout(() => {
+            recognition.stop();
             voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Voice Input';
-        }
+            voiceBtn.disabled = false;
+        }, 15000);
+        
+        recognition.onresult = function(event) {
+            let interim = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    finalText += event.results[i][0].transcript + ' ';
+                } else {
+                    interim += event.results[i][0].transcript;
+                }
+            }
+            
+            transcriptionDiv.innerHTML = `🎤 HEARING: ${finalText}<span style="color:#999">${interim}</span>`;
+            
+            if (finalText.trim()) {
+                const input = document.querySelector('input[name="symptoms"]');
+                if (input) {
+                    input.value = finalText.trim().replace(/and/g, ',');
+                }
+            }
+        };
+        
+        recognition.onerror = function(event) {
+            transcriptionDiv.innerHTML = '❌ Voice error. Use Quick Symptoms button!';
+            transcriptionDiv.style.color = '#dc3545';
+            voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Voice Input';
+            voiceBtn.disabled = false;
+        };
+        
+        recognition.onend = function() {
+            if (finalText.trim()) {
+                transcriptionDiv.innerHTML = `✅ SUCCESS: "${finalText.trim()}"`;
+                transcriptionDiv.style.color = '#28a745';
+            }
+            voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Voice Input';
+            voiceBtn.disabled = false;
+        };
     });
     
-    // Quick Symptoms functionality
+    // Quick Symptoms
     const quickBtn = document.getElementById('quickSymptomsBtn');
     const quickDropdown = document.getElementById('quickSymptomsDropdown');
     
@@ -1112,12 +908,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     quickDropdown.style.display = 'none';
                     quickBtn.innerHTML = '<i class="fas fa-magic"></i> Quick Symptoms';
-                    transcriptionDiv.innerHTML = `
-                        <div style="background: #d4edda; color: #155724; padding: 1rem; border-radius: 8px;">
-                            <strong>✅ SYMPTOMS ADDED!</strong><br>
-                            Selected: ${selected.join(', ')}
-                        </div>
-                    `;
+                    transcriptionDiv.innerHTML = '✅ Symptoms added!';
+                    transcriptionDiv.style.color = '#28a745';
                 }
             });
         }
@@ -1133,42 +925,572 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+    }
+});
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+            
+            recognition.onstart = function() {
+                isListening = true;
+                console.log('🎤 Recognition started successfully');
+                transcriptionDiv.innerHTML = '🎤 <strong>LISTENING ACTIVE!</strong> Speak your symptoms now (very loudly)!';
+                transcriptionDiv.style.color = '#28a745';
+            };
+            
+            recognition.onspeechstart = function() {
+                console.log('🗣️ Speech detected!');
+                transcriptionDiv.innerHTML = '🗣️ <strong>SPEECH DETECTED!</strong> Keep talking...';
+                transcriptionDiv.style.color = '#007bff';
+            };
+            
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                
+                // Process all results
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    const confidence = event.results[i][0].confidence || 0;
+                    
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript + ' ';
+                        console.log('✅ Final result:', transcript, 'Confidence:', confidence);
+                    } else {
+                        interimTranscript += transcript;
+                        console.log('🔄 Interim result:', transcript);
+                    }
+                }
+                
+                // Show live transcription with confidence boost for low volumes
+                const displayText = finalTranscript + (interimTranscript ? `<span style="color: #6c757d;">${interimTranscript}</span>` : '');
+                transcriptionDiv.innerHTML = `🎤 <strong>HEARING:</strong> ${displayText || 'Keep speaking loudly...'}`;
+                
+                // Insert final results immediately
+                if (finalTranscript.trim()) {
+                    insertTextIntoInput(finalTranscript.trim());
+                }
+            };
+            
+            recognition.onspeechend = function() {
+                console.log('🔇 Speech ended');
+                clearTimeout(timeout);
+                
+                // Wait a moment for final results
+                setTimeout(() => {
+                    recognition.stop();
+                }, 2000);
+            };
+            
+            recognition.onerror = function(event) {
+                clearTimeout(timeout);
+                console.error('❌ Speech recognition error:', event.error);
+                
+                let message = '';
+                switch(event.error) {
+                    case 'not-allowed':
+                        message = '🚫 Microphone blocked. Allow microphone access in browser.';
+                        break;
+                    case 'no-speech':
+                        message = '🔇 <strong>NO SPEECH DETECTED</strong><br>Your mic is working but volume is too low.<br><strong>Solutions:</strong><br>1. Speak MUCH louder<br>2. Get closer to microphone<br>3. Use Quick Symptoms instead';
+                        break;
+                    case 'audio-capture':
+                        message = '🎤 Microphone capture failed. Check Windows microphone settings.';
+                        break;
+                    case 'network':
+                        message = '🌐 Network error. Voice recognition needs internet.';
+                        break;
+                    default:
+                        message = `❌ Voice error: ${event.error}<br>Your microphone works but speech isn't clear enough.<br><strong>Use Quick Symptoms button instead!</strong>`;
+                }
+                
+                transcriptionDiv.innerHTML = message;
+                transcriptionDiv.style.color = '#dc3545';
+                
+                resetButton();
+            };
+            
+            recognition.onend = function() {
+                clearTimeout(timeout);
+                console.log('🔚 Speech recognition ended');
+                
+                if (finalTranscript.trim()) {
+                    insertTextIntoInput(finalTranscript.trim());
+                    transcriptionDiv.innerHTML = `✅ <strong>SUCCESS!</strong> Added: "${finalTranscript.trim()}"`;
+                    transcriptionDiv.style.color = '#28a745';
+                } else if (isListening) {
+                    transcriptionDiv.innerHTML = '🔇 No clear speech detected. Your microphone volume is too low.<br><strong>Use Quick Symptoms button - it works perfectly!</strong>';
+                    transcriptionDiv.style.color = '#ffc107';
+                }
+                
+                resetButton();
+            };
+            
+            function insertTextIntoInput(text) {
+                const symptomsInput = document.querySelector('input[name="symptoms"]');
+                if (symptomsInput && text) {
+                    // Clean up the text
+                    let cleanText = text
+                        .replace(/\s+/g, ' ')
+                        .replace(/\band\b/g, ',')
+                        .replace(/,\s*,/g, ',')
+                        .replace(/^,\s*|,\s*$/g, '')
+                        .trim();
+                    
+                    const currentValue = symptomsInput.value.trim();
+                    if (currentValue) {
+                        symptomsInput.value = currentValue + ', ' + cleanText;
+                    } else {
+                        symptomsInput.value = cleanText;
+                    }
+                    
+                    symptomsInput.focus();
+                    console.log('✅ TEXT INSERTED:', cleanText);
+                }
+            }
+            
+            function resetButton() {
+                button.innerHTML = '<i class="fas fa-microphone"></i> Voice Input';
+                button.disabled = false;
+            }
+        }
+    }
+
+        function startActualRecognition() {
+            try {
+                const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                
+                // Enhanced settings for better speech detection
+                recognition.continuous = true;          // Keep listening for longer phrases
+                recognition.interimResults = true;      // Show results as you speak
+                recognition.lang = 'en-US';
+                recognition.maxAlternatives = 3;        // Get multiple interpretations
+                
+                let finalTranscript = '';
+                let interimTranscript = '';
+                
+                // Start listening
+                button.innerHTML = '<i class="fas fa-stop-circle text-danger"></i> 🎤 Listening...';
+                button.disabled = true;
+                transcriptionDiv.innerHTML = '🎤 <strong>Listening...</strong> Say your symptoms now (e.g., "headache and fever")';
+                transcriptionDiv.style.color = '#007bff';
+                
+                recognition.start();
+                
+                // Timeout after 20 seconds for longer speech
+                const timeout = setTimeout(() => {
+                    recognition.stop();
+                    if (finalTranscript.trim()) {
+                        insertIntoInputField(finalTranscript.trim());
+                    } else {
+                        transcriptionDiv.textContent = '⏱️ No clear speech detected. Try speaking louder.';
+                        transcriptionDiv.style.color = '#ffc107';
+                    }
+                    resetButton();
+                }, 20000);
+                
+                recognition.onresult = function(event) {
+                    interimTranscript = '';
+                    
+                    // Process all results
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript + ' ';
+                            console.log('✅ Final speech:', transcript);
+                        } else {
+                            interimTranscript += transcript;
+                            console.log('🔄 Interim speech:', transcript);
+                        }
+                    }
+                    
+                    // Show live transcription
+                    const displayText = finalTranscript + (interimTranscript ? `<span style="color: #6c757d;">${interimTranscript}</span>` : '');
+                    transcriptionDiv.innerHTML = `🎤 <strong>Hearing:</strong> ${displayText || 'Keep speaking...'}`;
+                    
+                    // If we have final results, insert them immediately
+                    if (finalTranscript.trim()) {
+                        insertIntoInputField(finalTranscript.trim());
+                    }
+                };
+                
+                recognition.onspeechstart = function() {
+                    console.log('🗣️ Speech detected');
+                    transcriptionDiv.innerHTML = '🗣️ <strong>Speech detected!</strong> Keep talking...';
+                    transcriptionDiv.style.color = '#28a745';
+                };
+                
+                recognition.onspeechend = function() {
+                    console.log('🔇 Speech ended');
+                    clearTimeout(timeout);
+                    
+                    // Wait a bit for final results, then stop
+                    setTimeout(() => {
+                        recognition.stop();
+                    }, 1000);
+                };
+                
+                recognition.onerror = function(event) {
+                    clearTimeout(timeout);
+                    console.error('❌ Speech recognition error:', event.error);
+                    
+                    let message = '';
+                    switch(event.error) {
+                        case 'not-allowed':
+                            message = '🚫 Microphone access denied. Check browser permissions.';
+                            break;
+                        case 'no-speech':
+                            message = '🔇 No speech detected. Try speaking louder and closer to microphone.';
+                            break;
+                        case 'audio-capture':
+                            message = '🎤 Microphone error. Check if it\'s working in other apps.';
+                            break;
+                        case 'network':
+                            message = '🌐 Network error. Voice recognition needs internet. Try again.';
+                            break;
+                        case 'service-not-allowed':
+                            message = '🔒 Voice service blocked. Try in Chrome/Edge.';
+                            break;
+                        case 'bad-grammar':
+                            message = '🗣️ Speech unclear. Try speaking more clearly and slowly.';
+                            break;
+                        case 'language-not-supported':
+                            message = '🌐 Language not supported. Make sure you\'re speaking English.';
+                            break;
+                        default:
+                            message = `❌ Voice error (${event.error}). Use Quick Symptoms instead.`;
+                    }
+                    
+                    transcriptionDiv.textContent = message;
+                    transcriptionDiv.style.color = '#dc3545';
+                    
+                    // Show fallback after 2 seconds
+                    setTimeout(() => {
+                        showVoiceFallback();
+                    }, 2000);
+                    
+                    resetButton();
+                };
+                
+                recognition.onend = function() {
+                    clearTimeout(timeout);
+                    console.log('🔚 Speech recognition ended');
+                    
+                    // If we have any final transcript, use it
+                    if (finalTranscript.trim()) {
+                        insertIntoInputField(finalTranscript.trim());
+                        transcriptionDiv.innerHTML = `✅ <strong>Added to input:</strong> "${finalTranscript.trim()}"`;
+                        transcriptionDiv.style.color = '#28a745';
+                    }
+                    
+                    resetButton();
+                };
+                
+                function insertIntoInputField(text) {
+                    const symptomsInput = document.querySelector('input[name="symptoms"]');
+                    if (symptomsInput && text) {
+                        // Clean up the text (remove extra spaces, fix common speech recognition issues)
+                        let cleanText = text
+                            .replace(/\s+/g, ' ')                    // Multiple spaces to single space
+                            .replace(/\band\b/g, ',')               // "and" to comma
+                            .replace(/,\s*,/g, ',')                 // Double commas to single
+                            .replace(/^,\s*|,\s*$/g, '')            // Remove leading/trailing commas
+                            .trim();
+                        
+                        // If input already has text, append with comma
+                        const currentValue = symptomsInput.value.trim();
+                        if (currentValue) {
+                            symptomsInput.value = currentValue + ', ' + cleanText;
+                        } else {
+                            symptomsInput.value = cleanText;
+                        }
+                        
+                        symptomsInput.focus();
+                        console.log('✅ Inserted into input field:', cleanText);
+                    }
+                }
+                
+                function resetButton() {
+                    button.innerHTML = '<i class="fas fa-microphone"></i> Voice Input';
+                    button.disabled = false;
+                }
+                
+            } catch (error) {
+                console.error('❌ Recognition creation failed:', error);
+                transcriptionDiv.textContent = '❌ Failed to start voice recognition: ' + error.message;
+                transcriptionDiv.style.color = '#dc3545';
+                showVoiceFallback();
+            }
+        }
         
-        const clearBtn = document.getElementById('clearSymptoms');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', function() {
+        // Quick symptoms functionality
+        initializeQuickSymptoms();
+    });
+
+    function initializeQuickSymptoms() {
+    const quickSymptomsDropdown = document.getElementById('quickSymptomsDropdown');
+    const symptomButtons = document.querySelectorAll('.symptom-btn');
+    const addSelectedBtn = document.getElementById('addSelectedSymptoms');
+    const clearSymptomsBtn = document.getElementById('clearSymptoms');
+    
+    let selectedSymptoms = [];
+
+    // Toggle quick symptoms dropdown
+    quickSymptomsBtn && quickSymptomsBtn.addEventListener('click', function() {
+        if (quickSymptomsDropdown.style.display === 'none') {
+            quickSymptomsDropdown.style.display = 'block';
+            this.innerHTML = '<i class="fas fa-times"></i> Close Quick';
+        } else {
+            quickSymptomsDropdown.style.display = 'none';
+            this.innerHTML = '<i class="fas fa-magic"></i> Quick Symptoms';
+        }
+    });
+
+    // Handle symptom button clicks
+    symptomButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const symptom = this.dataset.symptom;
+            if (this.classList.contains('btn-outline-primary')) {
+                // Select symptom
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-primary');
+                selectedSymptoms.push(symptom);
+            } else {
+                // Deselect symptom
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-outline-primary');
+                selectedSymptoms = selectedSymptoms.filter(s => s !== symptom);
+            }
+        });
+    });
+
+    // Add selected symptoms to input
+    addSelectedBtn && addSelectedBtn.addEventListener('click', function() {
+        const symptomsInput = document.querySelector('input[name="symptoms"]');
+        if (symptomsInput && selectedSymptoms.length > 0) {
+            const currentValue = symptomsInput.value.trim();
+            const newSymptoms = selectedSymptoms.join(', ');
+            
+            if (currentValue) {
+                symptomsInput.value = currentValue + ', ' + newSymptoms;
+            } else {
+                symptomsInput.value = newSymptoms;
+            }
+            
+            // Reset selection
+            selectedSymptoms = [];
+            symptomButtons.forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-primary');
+            });
+            
+            // Hide dropdown
+            quickSymptomsDropdown.style.display = 'none';
+            quickSymptomsBtn.innerHTML = '<i class="fas fa-magic"></i> Quick Symptoms';
+            
+            // Show success message
+            const transcriptionDiv = document.getElementById('transcription');
+            transcriptionDiv.textContent = '✅ Symptoms added: ' + newSymptoms;
+            transcriptionDiv.style.color = '#28a745';
+        }
+    });
+
+    // Clear symptoms
+    clearSymptomsBtn && clearSymptomsBtn.addEventListener('click', function() {
+        const symptomsInput = document.querySelector('input[name="symptoms"]');
+        if (symptomsInput) {
+            symptomsInput.value = '';
+        }
+        selectedSymptoms = [];
+        symptomButtons.forEach(btn => {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-outline-primary');
+        });
+        
+        const transcriptionDiv = document.getElementById('transcription');
+        transcriptionDiv.textContent = '🗑️ Symptoms cleared';
+        transcriptionDiv.style.color = '#6c757d';
+    });
+
+    // Form submission enhancement
+    document.getElementById('diagnosisForm').addEventListener('submit', function(e) {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const loading = submitBtn.querySelector('.loading');
+        
+        submitBtn.disabled = true;
+        loading.classList.remove('d-none');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing... <span class="loading"></span>';
+    });
+
+    // Add animation when results appear
+    document.addEventListener('DOMContentLoaded', function() {
+        const resultButtons = document.querySelectorAll('.toggle-button');
+        resultButtons.forEach((button, index) => {
+            button.style.animationDelay = `${index * 0.1}s`;
+            button.classList.add('fade-in-up');
+        });
+    });
+
+    // Enhanced button hover effects
+    document.querySelectorAll('.toggle-button').forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.02)';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+    
+    <script>
+// SIMPLE WORKING VOICE RECOGNITION
+console.log('🎤 Voice Loading...');
+
+document.addEventListener('DOMContentLoaded', function() {
+    const voiceBtn = document.getElementById('startSpeechRecognition');
+    const transcriptionDiv = document.getElementById('transcription');
+    
+    if (!voiceBtn || !transcriptionDiv) {
+        console.error('Voice elements not found');
+        return;
+    }
+    
+    console.log('✅ Voice elements found');
+    
+    voiceBtn.addEventListener('click', function() {
+        console.log('🎤 VOICE BUTTON CLICKED!');
+        
+        if (!window.webkitSpeechRecognition && !window.SpeechRecognition) {
+            alert('Voice not supported. Use Chrome/Edge browser.');
+            return;
+        }
+        
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+        
+        voiceBtn.innerHTML = '🎤 LISTENING!';
+        voiceBtn.disabled = true;
+        transcriptionDiv.innerHTML = '🎤 <strong>LISTENING... SPEAK NOW!</strong>';
+        transcriptionDiv.style.color = '#28a745';
+        
+        let finalText = '';
+        recognition.start();
+        
+        setTimeout(() => {
+            recognition.stop();
+            voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Voice Input';
+            voiceBtn.disabled = false;
+        }, 15000);
+        
+        recognition.onresult = function(event) {
+            let interim = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    finalText += event.results[i][0].transcript + ' ';
+                } else {
+                    interim += event.results[i][0].transcript;
+                }
+            }
+            
+            transcriptionDiv.innerHTML = `🎤 HEARING: ${finalText}<span style="color:#999">${interim}</span>`;
+            
+            if (finalText.trim()) {
                 const input = document.querySelector('input[name="symptoms"]');
                 if (input) {
-                    input.value = '';
+                    input.value = finalText.trim().replace(/and/g, ',');
                 }
-                document.querySelectorAll('.symptom-btn').forEach(btn => {
-                    btn.classList.remove('btn-primary');
-                    btn.classList.add('btn-outline-primary');
+            }
+        };
+        
+        recognition.onerror = function(event) {
+            transcriptionDiv.innerHTML = '❌ Voice error. Use Quick Symptoms button!';
+            transcriptionDiv.style.color = '#dc3545';
+            voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Voice Input';
+            voiceBtn.disabled = false;
+        };
+        
+        recognition.onend = function() {
+            if (finalText.trim()) {
+                transcriptionDiv.innerHTML = `✅ SUCCESS: "${finalText.trim()}"`;
+                transcriptionDiv.style.color = '#28a745';
+            }
+            voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Voice Input';
+            voiceBtn.disabled = false;
+        };
+    });
+    
+    // Quick Symptoms
+    const quickBtn = document.getElementById('quickSymptomsBtn');
+    const quickDropdown = document.getElementById('quickSymptomsDropdown');
+    
+    if (quickBtn && quickDropdown) {
+        quickBtn.addEventListener('click', function() {
+            if (quickDropdown.style.display === 'none') {
+                quickDropdown.style.display = 'block';
+                this.innerHTML = '<i class="fas fa-times"></i> Close';
+            } else {
+                quickDropdown.style.display = 'none';
+                this.innerHTML = '<i class="fas fa-magic"></i> Quick Symptoms';
+            }
+        });
+        
+        const addBtn = document.getElementById('addSelectedSymptoms');
+        if (addBtn) {
+            addBtn.addEventListener('click', function() {
+                const selected = [];
+                document.querySelectorAll('.symptom-btn.btn-primary').forEach(btn => {
+                    selected.push(btn.dataset.symptom);
                 });
-                transcriptionDiv.innerHTML = `
-                    <div style="background: #6c757d; color: white; padding: 1rem; border-radius: 8px;">
-                        <strong>🗑️ SYMPTOMS CLEARED</strong><br>
-                        Ready for new input...
-                    </div>
-                `;
+                
+                if (selected.length > 0) {
+                    const input = document.querySelector('input[name="symptoms"]');
+                    if (input) {
+                        const current = input.value.trim();
+                        input.value = current ? current + ', ' + selected.join(', ') : selected.join(', ');
+                    }
+                    
+                    document.querySelectorAll('.symptom-btn').forEach(btn => {
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-outline-primary');
+                    });
+                    
+                    quickDropdown.style.display = 'none';
+                    quickBtn.innerHTML = '<i class="fas fa-magic"></i> Quick Symptoms';
+                    transcriptionDiv.innerHTML = '✅ Symptoms added!';
+                    transcriptionDiv.style.color = '#28a745';
+                }
             });
         }
+        
+        document.querySelectorAll('.symptom-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.classList.contains('btn-outline-primary')) {
+                    this.classList.remove('btn-outline-primary');
+                    this.classList.add('btn-primary');
+                } else {
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-outline-primary');
+                }
+            });
+        });
     }
     
     // Form submission enhancement
-    const form = document.getElementById('diagnosisForm');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const loading = submitBtn.querySelector('.loading');
-            
-            if (submitBtn && loading) {
-                submitBtn.disabled = true;
-                loading.classList.remove('d-none');
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing... <span class="loading"></span>';
-            }
-        });
-    }
+    document.getElementById('diagnosisForm').addEventListener('submit', function(e) {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const loading = submitBtn.querySelector('.loading');
+        
+        if (submitBtn && loading) {
+            submitBtn.disabled = true;
+            loading.classList.remove('d-none');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing... <span class="loading"></span>';
+        }
+    });
 });
     </script>
 </body>
